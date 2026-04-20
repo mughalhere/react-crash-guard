@@ -52,9 +52,14 @@ jobs:
       - name: Publish to GitHub Packages
         working-directory: packages/core
         run: |
+          VERSION=$(node -p "require('./package.json').version")
           npm pkg set name="@mughalhere/react-crash-guard"
           npm pkg set publishConfig.registry="https://npm.pkg.github.com"
-          pnpm publish --no-git-checks --access public
+          if npm view @mughalhere/react-crash-guard@$VERSION version 2>/dev/null; then
+            echo "@mughalhere/react-crash-guard@$VERSION already published, skipping"
+          else
+            pnpm publish --no-git-checks --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
