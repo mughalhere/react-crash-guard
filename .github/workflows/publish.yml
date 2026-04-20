@@ -34,7 +34,13 @@ jobs:
 
       - name: Publish to npm
         working-directory: packages/core
-        run: pnpm publish --no-git-checks --access public
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view react-crash-guard@$VERSION version 2>/dev/null; then
+            echo "react-crash-guard@$VERSION already published, skipping"
+          else
+            pnpm publish --no-git-checks --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
