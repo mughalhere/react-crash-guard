@@ -1,5 +1,5 @@
 {
-  "name": "react-error-boundary-patterns",
+  "name": "react-crash-guard",
   "version": "1.0.0",
   "private": false,
   "description": "Production-grade React error boundary patterns for SaaS applications",

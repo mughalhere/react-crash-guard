@@ -25,7 +25,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build core
-        run: pnpm --filter @mozia/react-error-boundaries build
+        run: pnpm --filter react-crash-guard build
 
       - name: Publish to npm
         working-directory: packages/core

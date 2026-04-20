@@ -4,13 +4,13 @@
   "description": "Production-grade React error boundary patterns for SaaS applications",
   "author": "Muhammad Zia <mughalheree@gmail.com>",
   "license": "MIT",
-  "homepage": "https://mozia.dev",
+  "homepage": "https://github.com/mughalhere/react-crash-guard#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mughalhere/react-error-boundary-patterns"
+    "url": "https://github.com/mughalhere/react-crash-guard"
   },
   "bugs": {
-    "url": "https://github.com/mughalhere/react-error-boundary-patterns/issues"
+    "url": "https://github.com/mughalhere/react-crash-guard/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -23,15 +23,25 @@
     "typescript",
     "saas"
   ],
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "default": "./dist/index.js"
     }
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "tsup",
@@ -41,7 +51,13 @@
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "@sentry/react": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -58,6 +74,8 @@
     "vitest": "^2.0.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ]
 }

@@ -1,7 +1,7 @@
-# AGENT.md — react-error-boundary-patterns
+# AGENT.md — react-crash-guard
 
 You are an expert React/TypeScript engineer building a production-grade, open-source repository
-called `react-error-boundary-patterns`. This is a portfolio and reference project by Muhammad Zia,
+called `react-crash-guard`. This is a portfolio and reference project by Muhammad Zia,
 a Senior Full Stack Engineer. The code must reflect real-world SaaS standards — not toy examples.
 
 ---
