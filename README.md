@@ -1,14 +1,14 @@
-# react-error-boundary-patterns
+# react-crash-guard
 
 > Production-grade React error boundary patterns for SaaS applications — with global catching, feature isolation, async error bridging, and pluggable error reporting.
 
 [![npm version](https://img.shields.io/npm/v/react-crash-guard)](https://www.npmjs.com/package/react-crash-guard)
-[![CI](https://github.com/mughalhere/react-error-boundary-patterns/actions/workflows/ci.yml/badge.svg)](https://github.com/mughalhere/react-error-boundary-patterns/actions)
+[![CI](https://github.com/mughalhere/react-crash-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/mughalhere/react-crash-guard/actions)
 [![Coverage](https://img.shields.io/badge/coverage-%3E80%25-brightgreen)](./packages/core)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](./packages/core/tsconfig.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**[Live Demo](https://react-error-boundary-patterns.vercel.app)** · **[npm Package](https://www.npmjs.com/package/react-crash-guard)** · **[npm Profile](https://www.npmjs.com/~mughalhere)** · **[Author](https://mozia.dev)**
+**[npm Package](https://www.npmjs.com/package/react-crash-guard)** · **[npm Profile](https://www.npmjs.com/~mughalhere)** · **[GitHub](https://github.com/mughalhere/react-crash-guard)**
 
 ---
 
@@ -123,10 +123,16 @@ React error boundaries only catch **render-time** errors. This hook bridges asyn
 ```bash
 npm install react-crash-guard
 # or
+yarn add react-crash-guard
+# or
 pnpm add react-crash-guard
 ```
 
-**Peer dependencies:** React 18+
+**Peer dependencies:** React 18+ is required. If you use `SentryReporter`, also install `@sentry/react >=7`:
+
+```bash
+npm install @sentry/react
+```
 
 ---
 
@@ -375,8 +381,8 @@ Each example is a standalone Vite app.
 
 ```bash
 # Clone the repo
-git clone https://github.com/mughalhere/react-error-boundary-patterns.git
-cd react-error-boundary-patterns
+git clone https://github.com/mughalhere/react-crash-guard.git
+cd react-crash-guard
 pnpm install
 
 # Run a specific example

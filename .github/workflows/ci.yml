@@ -6,9 +6,18 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
+    name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["20", "22"]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,17 +25,25 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ matrix.node-version }}
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build core
+        run: pnpm --filter react-crash-guard build
+
       - name: Type-check
         run: pnpm typecheck
 
       - name: Test (core)
-        run: pnpm --filter @mozia/react-error-boundaries test
+        run: pnpm --filter react-crash-guard test
 
-      - name: Build core
-        run: pnpm --filter @mozia/react-error-boundaries build
+      - name: Upload coverage
+        if: matrix.node-version == '20'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: packages/core/coverage/
+          retention-days: 7

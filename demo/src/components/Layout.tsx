@@ -17,7 +17,7 @@ export function Layout({ sidebar, main, errorLog }: LayoutProps) {
       </aside>
       <main className="flex-1 overflow-auto">
         <header className="border-b border-zinc-700 px-6 py-4">
-          <h1 className="text-xl font-semibold">react-error-boundary-patterns</h1>
+          <h1 className="text-xl font-semibold">react-crash-guard</h1>
           <p className="text-sm text-zinc-500 mt-1">Trigger errors to see boundaries and recovery.</p>
         </header>
         {main}

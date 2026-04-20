@@ -12,8 +12,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -25,7 +23,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build core
-        run: pnpm --filter @mozia/react-error-boundaries build
+        run: pnpm --filter react-crash-guard build
 
       - name: Publish to npm
         working-directory: packages/core
