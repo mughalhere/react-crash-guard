@@ -1,6 +1,6 @@
 {
   "name": "react-crash-guard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Production-grade React error boundary patterns for SaaS applications",
   "author": "Muhammad Zia <mughalheree@gmail.com>",
   "license": "MIT",
