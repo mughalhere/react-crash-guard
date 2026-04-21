@@ -1,0 +1,229 @@
+# react-crash-guard
+
+> Production-grade React error boundary patterns for SaaS applications.
+> Provides global catching, feature isolation, async error bridging, and pluggable error reporting.
+
+## Install
+
+```bash
+npm install react-crash-guard
+```
+
+Peer dependencies: `react >= 18`, `react-dom >= 18`. Optional: `@sentry/react >= 7` for Sentry integration.
+
+## When to use this package
+
+Use `react-crash-guard` whenever a React application needs to:
+- Prevent one broken component from crashing the entire page
+- Catch errors thrown in async callbacks, event handlers, or `useEffect`
+- Report errors to Sentry, Datadog, or a custom backend
+- Show user-friendly fallback UI based on error type (network, chunk-load, permission, etc.)
+
+## Core API
+
+### GlobalErrorBoundary
+
+Wraps the entire application. Catches all render errors. Tracks retry count to prevent infinite loops.
+
+```tsx
+import { GlobalErrorBoundary } from 'react-crash-guard';
+
+<GlobalErrorBoundary
+  reporter={sentryReporter}
+  fallback={(error, reset) => (
+    <div>
+      <p>Something went wrong.</p>
+      <button onClick={reset}>Try again</button>
+    </div>
+  )}
+>
+  <App />
+</GlobalErrorBoundary>
+```
+
+### FeatureErrorBoundary
+
+Isolates individual features or widgets. Errors stay contained — the rest of the page keeps working.
+
+```tsx
+import { FeatureErrorBoundary } from 'react-crash-guard';
+
+<FeatureErrorBoundary
+  featureName="UserProfile"
+  fallback={<p>Profile unavailable.</p>}
+>
+  <UserProfile userId={id} />
+</FeatureErrorBoundary>
+```
+
+### RouteErrorBoundary
+
+Wraps React Router v6 routes. Identifies errors by route name in reports.
+
+```tsx
+import { RouteErrorBoundary } from 'react-crash-guard';
+
+<RouteErrorBoundary routeName="/dashboard" fallback={<RouteError />}>
+  <Dashboard />
+</RouteErrorBoundary>
+```
+
+### AsyncErrorBoundary
+
+Boundary variant designed for async data-fetching components.
+
+```tsx
+import { AsyncErrorBoundary } from 'react-crash-guard';
+
+<AsyncErrorBoundary fallback={({ reset }) => <RetryButton onClick={reset} />}>
+  <DataComponent />
+</AsyncErrorBoundary>
+```
+
+### useErrorHandler
+
+Bridges errors from async code (setTimeout, fetch, event handlers) to the nearest error boundary.
+Must be used inside `ErrorHandlerProvider`.
+
+```tsx
+import { ErrorHandlerProvider, useErrorHandler } from 'react-crash-guard';
+
+function DataLoader() {
+  const throwError = useErrorHandler();
+
+  async function load() {
+    try {
+      const data = await fetchData();
+      setData(data);
+    } catch (err) {
+      throwError(err as Error);
+    }
+  }
+
+  return <button onClick={load}>Load</button>;
+}
+
+// Wrap with ErrorHandlerProvider inside a boundary
+<FeatureErrorBoundary featureName="DataLoader" fallback={<Fallback />}>
+  <ErrorHandlerProvider>
+    <DataLoader />
+  </ErrorHandlerProvider>
+</FeatureErrorBoundary>
+```
+
+### useErrorRecovery
+
+Access recovery state and actions from within a boundary's children.
+
+```tsx
+import { useErrorRecovery } from 'react-crash-guard';
+
+function RecoveryButton() {
+  const { hasError, reset } = useErrorRecovery();
+  if (!hasError) return null;
+  return <button onClick={reset}>Recover</button>;
+}
+```
+
+### SentryReporter
+
+Built-in Sentry integration. Pass to any boundary's `reporter` prop.
+
+```tsx
+import { SentryReporter } from 'react-crash-guard';
+import * as Sentry from '@sentry/react';
+
+Sentry.init({ dsn: '...' });
+const reporter = new SentryReporter(Sentry);
+
+<GlobalErrorBoundary reporter={reporter}>
+  <App />
+</GlobalErrorBoundary>
+```
+
+### ConsoleReporter
+
+Development reporter that logs errors to the console.
+
+```tsx
+import { ConsoleReporter } from 'react-crash-guard';
+const reporter = new ConsoleReporter('[MyApp]');
+```
+
+### classifyError
+
+Classifies an error into a structured type with a user-friendly message.
+
+```tsx
+import { classifyError } from 'react-crash-guard';
+
+const classified = classifyError(error);
+// { type: 'network' | 'chunk-load' | 'permission' | 'render' | 'unknown',
+//   recoverable: boolean, userMessage: string, retryable: boolean }
+```
+
+### serializeError
+
+Serializes an Error to a plain object safe for JSON logging.
+
+```tsx
+import { serializeError } from 'react-crash-guard';
+const plain = serializeError(error); // { name, message, stack }
+```
+
+## Complete app setup example
+
+```tsx
+import {
+  GlobalErrorBoundary,
+  ErrorHandlerProvider,
+  FeatureErrorBoundary,
+  SentryReporter,
+  ConsoleReporter,
+} from 'react-crash-guard';
+import * as Sentry from '@sentry/react';
+
+Sentry.init({ dsn: process.env.SENTRY_DSN });
+
+const reporter = process.env.NODE_ENV === 'production'
+  ? new SentryReporter(Sentry)
+  : new ConsoleReporter('[App]');
+
+function Root() {
+  return (
+    <GlobalErrorBoundary
+      reporter={reporter}
+      fallback={(error, reset) => (
+        <ErrorScreen error={error} onReset={reset} />
+      )}
+    >
+      <ErrorHandlerProvider>
+        <App />
+      </ErrorHandlerProvider>
+    </GlobalErrorBoundary>
+  );
+}
+```
+
+## TypeScript types
+
+All props interfaces are exported: `GlobalErrorBoundaryProps`, `RouteErrorBoundaryProps`,
+`FeatureErrorBoundaryProps`, `ErrorContext`, `ErrorFallback`, `ClassifiedError`, `ErrorBoundaryRef`.
+
+Reporter interface:
+
+```ts
+interface ErrorReporter {
+  report(error: Error, context: ErrorContext): void | Promise<void>;
+}
+```
+
+## Error classification types
+
+| type | Triggered by | recoverable | retryable |
+|------|-------------|-------------|-----------|
+| `network` | "network", "fetch", "xhr" in message | true | true |
+| `chunk-load` | "loading chunk", "loading css chunk" | true | false |
+| `permission` | "permission", "forbidden", "unauthorized" | false | false |
+| `render` | other React render errors | true | true |
+| `unknown` | anything else | true | true |
