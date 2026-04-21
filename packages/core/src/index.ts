@@ -24,6 +24,7 @@ export { serializeError } from "./utils/errorSerializer";
 
 export type {
   ErrorContext,
+  ErrorFallbackProps,
   ErrorFallback,
   GlobalErrorBoundaryProps,
   RouteErrorBoundaryProps,

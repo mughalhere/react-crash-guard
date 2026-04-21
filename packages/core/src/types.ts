@@ -19,6 +19,15 @@ export interface ErrorContext {
 }
 
 /**
+ * Props shape for a custom fallback component — destructure error and reset directly.
+ * @public
+ */
+export interface ErrorFallbackProps {
+  error: Error;
+  reset: () => void;
+}
+
+/**
  * Fallback can be a static React node or a function that receives error and reset.
  * @public
  */
