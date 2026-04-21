@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/components/errordisplay.tsx","./src/components/layout.tsx","./src/components/recoverypanel.tsx","./src/context/demoreportercontext.tsx","./src/scenarios/asyncerror.tsx","./src/scenarios/chunkloaderror.tsx","./src/scenarios/networkerror.tsx","./src/scenarios/rendererror.tsx"],"version":"5.9.3"}

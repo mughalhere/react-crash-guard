@@ -28,3 +28,7 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+*.d.ts
+
+# Vite compiled config (use .ts source directly)
+vite.config.js
