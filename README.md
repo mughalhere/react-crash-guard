@@ -342,7 +342,63 @@ class DatadogReporter implements ErrorReporter {
 | `fallback`    | `ReactNode \| (error, reset) => ReactNode`        | built-in UI | Custom fallback UI                               |
 | `reporter`    | `ErrorReporter`                                   | none        | Pluggable error reporter                         |
 | `onError`     | `(error: Error, info: ErrorInfo) => void`         | none        | Additional error callback                        |
-| `showDialog`  | `boolean`                                         | `false`     | Show user feedback dialog on error               |
+| `showDialog`  | `boolean`                                         | `false`     | Wraps the fallback UI in a `<div data-error-boundary-dialog>` container |
+
+Two types are exported to cover both use cases:
+
+**`ErrorFallbackProps`** — props shape for a custom fallback component:
+
+```tsx
+import type { ErrorFallbackProps } from 'react-crash-guard';
+
+const CrashPage = ({ error, reset }: ErrorFallbackProps) => (
+  <div>
+    <p>{error.message}</p>
+    <button onClick={reset}>Try again</button>
+  </div>
+);
+
+<GlobalErrorBoundary fallback={(error, reset) => <CrashPage error={error} reset={reset} />}>
+  <App />
+</GlobalErrorBoundary>
+```
+
+**`ErrorFallback`** — type of the `fallback` prop itself, for wrapper components that forward it:
+
+```tsx
+import type { ErrorFallback } from 'react-crash-guard';
+
+interface WidgetProps {
+  fallback: ErrorFallback; // ReactNode | ((error, reset) => ReactNode)
+}
+```
+
+When `showDialog={true}`, the fallback content is wrapped in a `<div data-error-boundary-dialog>` instead of rendered bare. This does **not** apply built-in modal styles — it gives you a stable hook to style the fallback as an overlay dialog via CSS, and a reliable selector for E2E tests:
+
+```tsx
+<GlobalErrorBoundary showDialog fallback={<CrashPage />}>
+  <App />
+</GlobalErrorBoundary>
+```
+
+```css
+/* position the fallback as a centered modal */
+[data-error-boundary-dialog] {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+```
+
+```ts
+// stable selector in Playwright / Testing Library
+await page.locator('[data-error-boundary-dialog]').waitFor();
+```
+
+Omit `showDialog` if you want the fallback to replace the broken subtree inline (the default behaviour).
 
 ### `RouteErrorBoundary`
 
@@ -399,16 +455,6 @@ cd demo && pnpm dev
 | [`01-basic-boundary`](./examples/01-basic-boundary) | Single component isolation, custom fallback, reset |
 | [`02-global-app-boundary`](./examples/02-global-app-boundary) | Three-layer hierarchy, route isolation, error propagation |
 | [`03-sentry-integration`](./examples/03-sentry-integration) | SentryReporter, async error bridging, production setup |
-
----
-
-## Real-World Context
-
-These patterns are derived from production work across multiple SaaS applications:
-
-- **Global error boundary** architecture deployed at [Instantly.ai](https://instantly.ai), reducing support ticket volume by 47% and achieving 99.8% error capture rate across all client sessions
-- **Feature-level isolation** patterns used at [Convert.com](https://convert.com) to prevent experimentation widget failures from affecting the broader application
-- **Async error bridging** essential for high-volume data operations where fetch failures must surface correctly through the boundary hierarchy
 
 ---
 
