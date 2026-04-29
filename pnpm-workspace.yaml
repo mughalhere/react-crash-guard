@@ -3,4 +3,5 @@ packages:
   - "examples/01-basic-boundary"
   - "examples/02-global-app-boundary"
   - "examples/03-sentry-integration"
+  - "examples/04-cloudwatch-integration"
   - "demo"

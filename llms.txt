@@ -9,7 +9,7 @@
 npm install react-crash-guard
 ```
 
-Peer dependencies: `react >= 18`, `react-dom >= 18`. Optional: `@sentry/react >= 7` for Sentry integration.
+Peer dependencies: `react >= 18`, `react-dom >= 18`. Optional: `@sentry/react >= 7` for Sentry integration, `@aws-sdk/client-cloudwatch-logs >= 3` for CloudWatch integration.
 
 ## When to use this package
 
@@ -141,6 +141,39 @@ const reporter = new SentryReporter(Sentry);
 </GlobalErrorBoundary>
 ```
 
+### CloudWatchReporter
+
+Built-in AWS CloudWatch Logs integration. Sends a structured JSON log event to CloudWatch on every boundary-caught error. No hard dependency on the AWS SDK — pass a `putLogEvents` callback that wraps `PutLogEventsCommand`, so you control the client and credentials.
+
+```tsx
+import {
+  CloudWatchLogsClient,
+  PutLogEventsCommand,
+} from '@aws-sdk/client-cloudwatch-logs';
+import { GlobalErrorBoundary, CloudWatchReporter } from 'react-crash-guard';
+
+const client = new CloudWatchLogsClient({ region: 'us-east-1' });
+
+const reporter = new CloudWatchReporter({
+  logGroupName: '/myapp/errors',
+  logStreamName: 'production',
+  putLogEvents: async (logGroupName, logStreamName, logEvents) => {
+    await client.send(new PutLogEventsCommand({ logGroupName, logStreamName, logEvents }));
+  },
+  service: 'my-frontend',    // included in every log entry
+  environment: 'production', // included in every log entry
+});
+
+<GlobalErrorBoundary reporter={reporter}>
+  <App />
+</GlobalErrorBoundary>
+```
+
+Each crash writes one CloudWatch log event whose `message` is a JSON string with these fields:
+`level`, `timestamp` (ISO 8601), `message`, `errorName`, `stack`, `boundaryName`, `routeName`,
+`featureName`, `componentStack`, `userId`, `service`, `environment`, plus any fields from `context.extra`.
+Undefined fields are omitted. Reporter silently no-ops if `putLogEvents` throws.
+
 ### ConsoleReporter
 
 Development reporter that logs errors to the console.
@@ -209,6 +242,8 @@ function Root() {
 
 All props interfaces are exported: `GlobalErrorBoundaryProps`, `RouteErrorBoundaryProps`,
 `FeatureErrorBoundaryProps`, `ErrorContext`, `ErrorFallback`, `ClassifiedError`, `ErrorBoundaryRef`.
+
+Reporter types: `SentryReporterOptions`, `CloudWatchReporterOptions`, `CloudWatchLogEvent`, `PutLogEventsFn`.
 
 Reporter interface:
 
