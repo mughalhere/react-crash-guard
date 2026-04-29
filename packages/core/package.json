@@ -54,10 +54,14 @@
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
-    "@sentry/react": ">=7.0.0"
+    "@sentry/react": ">=7.0.0",
+    "@aws-sdk/client-cloudwatch-logs": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "@sentry/react": {
+      "optional": true
+    },
+    "@aws-sdk/client-cloudwatch-logs": {
       "optional": true
     }
   },
