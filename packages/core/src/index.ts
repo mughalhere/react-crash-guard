@@ -16,8 +16,14 @@ export { ErrorHandlerProvider } from "./context/ErrorHandlerContext";
 
 export { ConsoleReporter } from "./reporters/ConsoleReporter";
 export { SentryReporter } from "./reporters/SentryReporter";
+export { CloudWatchReporter } from "./reporters/CloudWatchReporter";
 export type { ErrorReporter } from "./reporters/types";
 export type { SentryReporterOptions } from "./reporters/SentryReporter";
+export type {
+  CloudWatchReporterOptions,
+  CloudWatchLogEvent,
+  PutLogEventsFn,
+} from "./reporters/CloudWatchReporter";
 
 export { classifyError } from "./utils/errorClassifier";
 export { serializeError } from "./utils/errorSerializer";

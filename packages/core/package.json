@@ -1,10 +1,10 @@
 {
   "name": "react-crash-guard",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Production-grade React error boundary patterns for SaaS applications",
   "author": "Muhammad Zia <mughalheree@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/mughalhere/react-crash-guard#readme",
+  "homepage": "https://mughalhere.github.io/react-crash-guard/",
   "repository": {
     "type": "git",
     "url": "https://github.com/mughalhere/react-crash-guard"
@@ -20,6 +20,8 @@
     "error-boundary",
     "error-handling",
     "sentry",
+    "cloudwatch",
+    "aws",
     "typescript",
     "saas"
   ],
@@ -52,10 +54,14 @@
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
-    "@sentry/react": ">=7.0.0"
+    "@sentry/react": ">=7.0.0",
+    "@aws-sdk/client-cloudwatch-logs": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "@sentry/react": {
+      "optional": true
+    },
+    "@aws-sdk/client-cloudwatch-logs": {
       "optional": true
     }
   },

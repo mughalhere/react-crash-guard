@@ -15,6 +15,7 @@ import { RenderError } from "./scenarios/RenderError";
 import { AsyncError } from "./scenarios/AsyncError";
 import { NetworkError } from "./scenarios/NetworkError";
 import { ChunkLoadError } from "./scenarios/ChunkLoadError";
+import { Integrations } from "./scenarios/Integrations";
 
 export interface ErrorLogEntry {
   id: string;
@@ -72,10 +73,15 @@ function AppContent() {
           <Layout
           sidebar={
             <nav className="flex flex-col gap-2 p-4">
-              <a href="#render" className="text-cyan-400 hover:underline">Render Error</a>
-              <a href="#async" className="text-cyan-400 hover:underline">Async Error</a>
-              <a href="#network" className="text-cyan-400 hover:underline">Network Error</a>
-              <a href="#chunk" className="text-cyan-400 hover:underline">Chunk Load Error</a>
+              <div className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1">Scenarios</div>
+              <a href="#render" className="text-cyan-400 hover:underline text-sm">Render Error</a>
+              <a href="#async" className="text-cyan-400 hover:underline text-sm">Async Error</a>
+              <a href="#network" className="text-cyan-400 hover:underline text-sm">Network Error</a>
+              <a href="#chunk" className="text-cyan-400 hover:underline text-sm">Chunk Load Error</a>
+              <div className="text-xs font-medium text-zinc-500 uppercase tracking-wide mt-3 mb-1">Integrations</div>
+              <a href="#cloudwatch" className="text-cyan-400 hover:underline text-sm">AWS CloudWatch</a>
+              <a href="#sentry" className="text-cyan-400 hover:underline text-sm">Sentry</a>
+              <a href="#custom-reporter" className="text-cyan-400 hover:underline text-sm">Custom reporter</a>
             </nav>
           }
           main={
@@ -92,6 +98,11 @@ function AppContent() {
               <section id="chunk">
                 <ChunkLoadError />
               </section>
+              <div className="border-t border-zinc-700 pt-8">
+                <section id="integrations">
+                  <Integrations />
+                </section>
+              </div>
             </div>
           }
           errorLog={
