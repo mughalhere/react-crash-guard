@@ -1,7 +1,12 @@
 # react-crash-guard
 
-> Production-grade React error boundary patterns for SaaS applications.
-> Provides global catching, feature isolation, async error bridging, and pluggable error reporting.
+> React error boundary library that also catches async errors — the ones thrown in useEffect,
+> setTimeout, event handlers, and promise rejections that a plain React boundary silently misses.
+> Provides global/route/feature/async boundary presets, error classification, and pluggable
+> reporting (Sentry, AWS CloudWatch, or custom). TypeScript-first, zero runtime dependencies.
+>
+> Live demo: https://mughalhere.github.io/react-crash-guard/
+> Source: https://github.com/mughalhere/react-crash-guard
 
 ## Install
 
