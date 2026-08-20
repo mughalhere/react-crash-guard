@@ -2,12 +2,208 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>react-crash-guard — Demo</title>
+
+    <title>react-crash-guard — React Error Boundaries That Catch Async Errors</title>
+    <meta
+      name="description"
+      content="Interactive demo of react-crash-guard: React error boundaries with global, route, and feature-level isolation, async error bridging via useErrorHandler, error classification, and pluggable Sentry or CloudWatch reporting."
+    />
+    <link rel="canonical" href="https://mughalhere.github.io/react-crash-guard/" />
+
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="react-crash-guard" />
+    <meta property="og:url" content="https://mughalhere.github.io/react-crash-guard/" />
+    <meta
+      property="og:title"
+      content="react-crash-guard — React Error Boundaries That Catch Async Errors"
+    />
+    <meta
+      property="og:description"
+      content="Global, route, and feature-level React error boundaries with async error bridging, error classification, and pluggable Sentry/CloudWatch reporting. Try the live demo."
+    />
+    <meta
+      property="og:image"
+      content="https://mughalhere.github.io/react-crash-guard/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="react-crash-guard — production-grade React error boundaries"
+    />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="react-crash-guard — React Error Boundaries That Catch Async Errors"
+    />
+    <meta
+      name="twitter:description"
+      content="Global, route, and feature-level React error boundaries with async error bridging and pluggable Sentry/CloudWatch reporting."
+    />
+    <meta
+      name="twitter:image"
+      content="https://mughalhere.github.io/react-crash-guard/og-image.png"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareSourceCode",
+            "@id": "https://mughalhere.github.io/react-crash-guard/#software",
+            "name": "react-crash-guard",
+            "description": "React error boundary library that also catches async errors — global, route, and feature-level isolation with pluggable Sentry, CloudWatch, and custom reporting.",
+            "url": "https://mughalhere.github.io/react-crash-guard/",
+            "codeRepository": "https://github.com/mughalhere/react-crash-guard",
+            "programmingLanguage": "TypeScript",
+            "runtimePlatform": "React 18+",
+            "license": "https://opensource.org/licenses/MIT",
+            "author": {
+              "@type": "Person",
+              "name": "Muhammad Zia",
+              "url": "https://github.com/mughalhere"
+            },
+            "keywords": "react, error boundary, error handling, async errors, sentry, cloudwatch, typescript"
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://mughalhere.github.io/react-crash-guard/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Do React error boundaries catch async errors?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. React error boundaries only catch errors thrown during the render phase, lifecycle methods, and constructors. Errors thrown inside useEffect callbacks, setTimeout, event handlers, or promise rejections escape the boundary entirely. react-crash-guard bridges these with the useErrorHandler hook, which stores the error in state and rethrows it during render so the nearest boundary catches it."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do you reset a React error boundary after an error?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Pass a function fallback to the boundary and call the reset callback it receives: fallback={(error, reset) => <button onClick={reset}>Try again</button>}. Inside a fallback, the useErrorRecovery hook also exposes retry, retryCount, and isRecovering, plus an optional retry delay and a maximum retry count that prevents infinite re-render loops."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How is react-crash-guard different from react-error-boundary?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "react-error-boundary is a minimal primitive: one generic ErrorBoundary component plus a useErrorBoundary hook for async errors. react-crash-guard is the batteries-included option, adding four purpose-built boundaries (global, route, feature, async), a pluggable ErrorReporter interface with Sentry and AWS CloudWatch implementations included, automatic boundary/route/feature context on every report, and a classifyError utility that labels errors as network, chunk-load, permission, render, or unknown so the fallback UI can react appropriately. Both have zero runtime dependencies and can coexist in the same app."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can a React error boundary be written as a hook or function component?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "React only supports the error boundary lifecycle (getDerivedStateFromError and componentDidCatch) on class components, so a boundary itself cannot be a hook. react-crash-guard keeps a single internal class component and exposes function components and hooks around it, so application code never writes a class."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
-  <body>
+  <body class="bg-zinc-900 text-zinc-100">
     <div id="root"></div>
+
+    <!--
+      Static, crawlable content. This app is a client-rendered SPA, so without this
+      section search engines see an empty <div id="root">. It also backs the FAQPage
+      structured data above, which requires the answers to be visible on the page.
+    -->
+    <section class="border-t border-zinc-700 px-6 py-10 max-w-3xl mx-auto">
+      <h2 class="text-lg font-semibold mb-1">
+        React error boundary FAQ
+      </h2>
+      <p class="text-sm text-zinc-500 mb-6">
+        Common questions about error boundaries in React 18+, answered with
+        <a
+          href="https://www.npmjs.com/package/react-crash-guard"
+          class="text-zinc-300 underline hover:text-white"
+          >react-crash-guard</a
+        >.
+      </p>
+
+      <h3 class="font-semibold mt-6 mb-2">Do React error boundaries catch async errors?</h3>
+      <p class="text-sm text-zinc-400 leading-relaxed">
+        No. React error boundaries only catch errors thrown during the render phase,
+        lifecycle methods, and constructors. Errors thrown inside <code>useEffect</code>
+        callbacks, <code>setTimeout</code>, event handlers, or promise rejections escape
+        the boundary entirely. <code>react-crash-guard</code> bridges these with the
+        <code>useErrorHandler</code> hook, which stores the error in state and rethrows it
+        during render so the nearest boundary catches it.
+      </p>
+
+      <h3 class="font-semibold mt-6 mb-2">
+        How do you reset a React error boundary after an error?
+      </h3>
+      <p class="text-sm text-zinc-400 leading-relaxed">
+        Pass a function fallback to the boundary and call the <code>reset</code> callback it
+        receives: <code>fallback={(error, reset) =&gt; ...}</code>. Inside a fallback, the
+        <code>useErrorRecovery</code> hook also exposes <code>retry</code>,
+        <code>retryCount</code>, and <code>isRecovering</code>, plus an optional retry delay
+        and a maximum retry count that prevents infinite re-render loops.
+      </p>
+
+      <h3 class="font-semibold mt-6 mb-2">
+        How is react-crash-guard different from react-error-boundary?
+      </h3>
+      <p class="text-sm text-zinc-400 leading-relaxed">
+        <code>react-error-boundary</code> is a minimal primitive: one generic
+        <code>ErrorBoundary</code> component plus a <code>useErrorBoundary</code> hook for async
+        errors. <code>react-crash-guard</code> is the batteries-included option, adding four
+        purpose-built boundaries (global, route, feature, async), a pluggable
+        <code>ErrorReporter</code> interface with Sentry and AWS CloudWatch implementations
+        included, automatic boundary/route/feature context on every report, and a
+        <code>classifyError</code> utility that labels errors as network, chunk-load,
+        permission, render, or unknown so the fallback UI can react appropriately. Both have
+        zero runtime dependencies and can coexist in the same app.
+      </p>
+
+      <h3 class="font-semibold mt-6 mb-2">
+        Can a React error boundary be written as a hook or function component?
+      </h3>
+      <p class="text-sm text-zinc-400 leading-relaxed">
+        React only supports the error boundary lifecycle
+        (<code>getDerivedStateFromError</code> and <code>componentDidCatch</code>) on class
+        components, so a boundary itself cannot be a hook. <code>react-crash-guard</code>
+        keeps a single internal class component and exposes function components and hooks
+        around it, so application code never writes a class.
+      </p>
+
+      <p class="text-sm text-zinc-500 mt-8">
+        <a
+          href="https://github.com/mughalhere/react-crash-guard"
+          class="text-zinc-300 underline hover:text-white"
+          >Source on GitHub</a
+        >
+        ·
+        <a
+          href="https://github.com/mughalhere/react-crash-guard#readme"
+          class="text-zinc-300 underline hover:text-white"
+          >Documentation</a
+        >
+        ·
+        <a
+          href="https://www.npmjs.com/package/react-crash-guard"
+          class="text-zinc-300 underline hover:text-white"
+          >npm</a
+        >
+      </p>
+    </section>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

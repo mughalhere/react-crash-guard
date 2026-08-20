@@ -1,8 +1,8 @@
 {
   "name": "react-crash-guard",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": false,
-  "description": "Production-grade React error boundary patterns for SaaS applications",
+  "description": "React error boundary library that also catches async errors — global, route, and feature-level isolation with pluggable Sentry, CloudWatch, and custom reporting.",
   "author": "Muhammad Zia <mughalheree@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -13,7 +13,8 @@
     "dev:demo": "pnpm --filter demo run dev",
     "dev:example-01": "pnpm --filter 01-basic-boundary run dev",
     "dev:example-02": "pnpm --filter 02-global-app-boundary run dev",
-    "dev:example-03": "pnpm --filter 03-sentry-integration run dev"
+    "dev:example-03": "pnpm --filter 03-sentry-integration run dev",
+    "dev:example-04": "pnpm --filter 04-cloudwatch-integration run dev"
   },
   "engines": {
     "node": ">=20"

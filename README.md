@@ -1,6 +1,6 @@
 # react-crash-guard
 
-> Production-grade React error boundary patterns for SaaS applications — with global catching, feature isolation, async error bridging, and pluggable error reporting.
+> React error boundaries that catch async errors too — global, route, and feature-level isolation, error classification, and pluggable Sentry / CloudWatch reporting. TypeScript-first, zero runtime dependencies.
 
 [![npm version](https://img.shields.io/npm/v/react-crash-guard)](https://www.npmjs.com/package/react-crash-guard)
 [![CI](https://github.com/mughalhere/react-crash-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/mughalhere/react-crash-guard/actions)
@@ -8,7 +8,23 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](./packages/core/tsconfig.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**[npm Package](https://www.npmjs.com/package/react-crash-guard)** · **[npm Profile](https://www.npmjs.com/~mughalhere)** · **[GitHub](https://github.com/mughalhere/react-crash-guard)**
+**[Live Demo](https://mughalhere.github.io/react-crash-guard/)** · **[npm Package](https://www.npmjs.com/package/react-crash-guard)** · **[Documentation](#api-reference)** · **[GitHub](https://github.com/mughalhere/react-crash-guard)**
+
+```bash
+npm install react-crash-guard
+```
+
+```tsx
+import { GlobalErrorBoundary, ErrorHandlerProvider, useErrorHandler } from 'react-crash-guard';
+
+// One broken widget no longer takes down the page — and this catches
+// the async errors that a plain React error boundary silently misses.
+<GlobalErrorBoundary fallback={(error, reset) => <ErrorPage error={error} onRetry={reset} />}>
+  <ErrorHandlerProvider>
+    <App />
+  </ErrorHandlerProvider>
+</GlobalErrorBoundary>
+```
 
 ---
 
@@ -22,6 +38,27 @@ Most teams either:
 - Have no visibility into what errors actually occurred in production
 
 This repository demonstrates how to architect error handling the right way: **layered, isolated, observable, and recoverable**.
+
+---
+
+## How it compares to `react-error-boundary`
+
+[`react-error-boundary`](https://github.com/bvaughn/react-error-boundary) is an excellent minimal
+primitive, and if all you need is one boundary component you should probably use it.
+`react-crash-guard` is the opinionated, batteries-included option: it assumes you are running a
+real production app that needs layered isolation and an error reporting pipeline.
+
+| | `react-error-boundary` | `react-crash-guard` |
+|---|---|---|
+| Boundary components | One generic `ErrorBoundary` | Four presets: global, route, feature, async |
+| Async error bridging | `useErrorBoundary().showBoundary` | `useErrorHandler()` |
+| Reset / retry | `resetKeys`, `onReset` | `reset` callback, `useErrorRecovery()`, built-in retry cap |
+| Error reporting | `onError` callback — bring your own | `ErrorReporter` interface, **Sentry and AWS CloudWatch included** |
+| Error classification | — | `classifyError()` → `network` / `chunk-load` / `permission` / `render` |
+| Reporting context | You assemble it yourself | `boundaryName`, `routeName`, `featureName` attached automatically |
+| Runtime dependencies | None | None |
+
+Both libraries can coexist — nothing here conflicts with an existing `react-error-boundary` setup.
 
 ---
 
@@ -445,6 +482,7 @@ pnpm install
 cd examples/01-basic-boundary && pnpm dev
 cd examples/02-global-app-boundary && pnpm dev
 cd examples/03-sentry-integration && pnpm dev
+cd examples/04-cloudwatch-integration && pnpm dev
 
 # Run the full interactive demo
 cd demo && pnpm dev
@@ -455,6 +493,89 @@ cd demo && pnpm dev
 | [`01-basic-boundary`](./examples/01-basic-boundary) | Single component isolation, custom fallback, reset |
 | [`02-global-app-boundary`](./examples/02-global-app-boundary) | Three-layer hierarchy, route isolation, error propagation |
 | [`03-sentry-integration`](./examples/03-sentry-integration) | SentryReporter, async error bridging, production setup |
+| [`04-cloudwatch-integration`](./examples/04-cloudwatch-integration) | CloudWatchReporter, structured JSON log events, AWS setup |
+
+---
+
+## FAQ
+
+### Do React error boundaries catch async errors?
+
+No. React error boundaries only catch errors thrown during the **render phase**, in lifecycle
+methods, and in constructors. Anything thrown from a `useEffect` callback, a `setTimeout`, an event
+handler, or an unhandled promise rejection escapes the boundary completely — React never sees it.
+
+The fix is to move the error into render. `useErrorHandler()` stores the error in state and rethrows
+it during the next render, so the nearest boundary catches it normally:
+
+```tsx
+const throwError = useErrorHandler();
+
+useEffect(() => {
+  fetchDashboard().catch(throwError); // now the boundary catches it
+}, [throwError]);
+```
+
+`ErrorHandlerProvider` must be mounted **inside** the boundary that should receive the error.
+
+### How do I reset a React error boundary?
+
+Use the `reset` callback handed to a function fallback:
+
+```tsx
+<GlobalErrorBoundary fallback={(error, reset) => <button onClick={reset}>Try again</button>}>
+```
+
+Inside a fallback you can also call `useErrorRecovery()`, which adds `retryCount`, `isRecovering`,
+and an optional `retryDelay`. `GlobalErrorBoundary` and `RouteErrorBoundary` cap retries so a
+component that throws on every render cannot spin in an infinite reset loop.
+
+### Can an error boundary be a hook or a function component?
+
+Not the boundary itself. React exposes `getDerivedStateFromError` and `componentDidCatch` only on
+class components, and there is still no hook equivalent. `react-crash-guard` keeps one internal
+class component and wraps it in function components and hooks, so your application code never
+writes a class.
+
+### Does this work with React Router?
+
+Yes. Wrap each route element in `RouteErrorBoundary` and pass `routeName` — the name is attached to
+every error report, so you can see which route is failing in Sentry or CloudWatch.
+
+```tsx
+<Route path="/dashboard" element={
+  <RouteErrorBoundary routeName="dashboard"><Dashboard /></RouteErrorBoundary>
+} />
+```
+
+### Does it work with Next.js or server components?
+
+The boundaries are client components — add `'use client'` to the file that renders them. They work
+in the Next.js App Router and Pages Router for anything client-rendered. Errors thrown on the server
+during RSC rendering are handled by Next's own `error.tsx` convention, not by a client boundary.
+
+### How do I report errors somewhere other than Sentry or CloudWatch?
+
+Implement the `ErrorReporter` interface — it is a single method:
+
+```ts
+import type { ErrorReporter, ErrorContext } from 'react-crash-guard';
+
+class DatadogReporter implements ErrorReporter {
+  report(error: Error, context: ErrorContext) {
+    datadogLogs.logger.error(error.message, { ...context, error });
+  }
+}
+```
+
+Reporter failures are swallowed by the boundary, so a broken reporting pipeline can never take down
+the app it is monitoring.
+
+### What is the bundle size?
+
+The package ships ESM and CJS builds, is marked `sideEffects: false`, and has **zero runtime
+dependencies** — React is a peer dependency. Sentry and the AWS SDK are optional peers that are
+never imported by the core; you inject them, so unused reporters tree-shake away.
 
 ---
 
