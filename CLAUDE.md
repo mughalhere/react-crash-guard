@@ -61,7 +61,7 @@ import {
   ConsoleReporter,
 } from 'react-crash-guard';
 
-const reporter = isProd ? new SentryReporter(Sentry) : new ConsoleReporter();
+const reporter = isProd ? new SentryReporter({ getCaptureException: () => Sentry.captureException }) : new ConsoleReporter();
 
 <GlobalErrorBoundary reporter={reporter} fallback={(err, reset) => <ErrorPage onReset={reset} />}>
   <ErrorHandlerProvider>
