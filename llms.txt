@@ -139,7 +139,7 @@ import { SentryReporter } from 'react-crash-guard';
 import * as Sentry from '@sentry/react';
 
 Sentry.init({ dsn: '...' });
-const reporter = new SentryReporter(Sentry);
+const reporter = new SentryReporter({ getCaptureException: () => Sentry.captureException });
 
 <GlobalErrorBoundary reporter={reporter}>
   <App />
@@ -224,7 +224,7 @@ import * as Sentry from '@sentry/react';
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const reporter = process.env.NODE_ENV === 'production'
-  ? new SentryReporter(Sentry)
+  ? new SentryReporter({ getCaptureException: () => Sentry.captureException })
   : new ConsoleReporter('[App]');
 
 function Root() {
